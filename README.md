@@ -53,8 +53,11 @@ Then open **http://localhost:8000/demo/index.html** in Chrome or Edge and click 
 ```
 src/
   index.js                  public re-exports
-  chord-detector.js         MIDI orchestration: held-notes, settle timer, event emission
-  midi-input.js             Web MIDI API wrapper
+  chord-detector.js         wires: midi-input → chord-gater → chord-classifier
+  midi-input/               Web MIDI API (note-on/off, devices)
+    index.js                createMidiInput
+  chord-gater/              held notes + settle + bass/treble split → stable candidates
+    index.js                createChordGater
   chord-classifier/         standalone: bass + treble notes → chord designation
     index.js                createChordClassifier + classify()
     templates.js            chord templates (major, minor)
@@ -62,6 +65,27 @@ src/
 demo/
   index.html
   demo.js
+```
+
+### Stable chord gate (without MIDI)
+
+`chord-gater` emits `{ bassMidi, trebleMidis }` once the finger set settles. Feed it synthetic note events:
+
+```js
+import { createChordGater } from './src/chord-gater/index.js';
+
+const gate = createChordGater({
+  splitBassAndTrebleOn: 'C4',
+  settleMs: 60,
+  onStableChordCandidate: ({ bassMidi, trebleMidis }) =>
+    console.log('stable', bassMidi, trebleMidis),
+  onStableChordRelease: ({ bassMidi, trebleMidis }) =>
+    console.log('released', bassMidi, trebleMidis),
+});
+
+gate.handleNoteOn(48);
+// …gate.handleNoteOn / gate.handleNoteOff as needed
+gate.dispose(); // clears timer and notifies release if a chord was active
 ```
 
 ### Standalone chord classification
