@@ -1,4 +1,4 @@
-import { NOTES_PER_OCTAVE, NOTE_NAMES_SHARP, pitchClass } from './notes.js';
+import { NOTES_PER_OCTAVE, NOTE_NAMES, pitchClass } from './notes.js';
 import { CHORD_TEMPLATES } from './templates.js';
 
 const setsEqual = (a, b) => {
@@ -30,11 +30,11 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
     const trebleResult = classifyTreble(trebleMidis);
     if (!trebleResult) return 'unknown';
 
-    const chordName = `${NOTE_NAMES_SHARP[trebleResult.rootPc]} ${trebleResult.suffix}`;
+    const chordName = `${NOTE_NAMES[trebleResult.rootPc]} ${trebleResult.suffix}`;
     const bassPc = pitchClass(bassMidi);
 
     if (bassPc === trebleResult.rootPc) return chordName;
-    return `${chordName} / ${NOTE_NAMES_SHARP[bassPc]}`;
+    return `${chordName} / ${NOTE_NAMES[bassPc]}`;
   };
 
   return { classify };
