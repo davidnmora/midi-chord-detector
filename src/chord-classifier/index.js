@@ -10,13 +10,13 @@ const setsEqual = (a, b) => {
 const intervalsFromRoot = (rootPc, pitchClasses) =>
   new Set([...pitchClasses].map((pc) => (pc - rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
 
-export const createChordResolver = ({ templates = CHORD_TEMPLATES } = {}) => {
+export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
   const templateSets = templates.map(({ suffix, intervals }) => ({
     suffix,
     intervalSet: new Set(intervals),
   }));
 
-  const resolve = ({ bassMidi, trebleMidis }) => {
+  const classify = ({ bassMidi, trebleMidis }) => {
     const rootPc = pitchClass(bassMidi);
     const allPcs = new Set([bassMidi, ...trebleMidis].map(pitchClass));
     const played = intervalsFromRoot(rootPc, allPcs);
@@ -25,5 +25,5 @@ export const createChordResolver = ({ templates = CHORD_TEMPLATES } = {}) => {
     return match ? `${NOTE_NAMES_SHARP[rootPc]} ${match.suffix}` : 'unknown';
   };
 
-  return { resolve };
+  return { classify };
 };

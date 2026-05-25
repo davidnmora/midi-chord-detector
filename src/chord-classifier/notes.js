@@ -1,6 +1,6 @@
 export const NOTES_PER_OCTAVE = 12;
 export const NOTE_NAMES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-export const LOWEST_MIDI_OCTAVE = -1; // MIDI note 0 == C-1
+export const LOWEST_MIDI_OCTAVE = -1;
 
 export const pitchClass = (midi) =>
   ((midi % NOTES_PER_OCTAVE) + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE;

@@ -1,6 +1,6 @@
 import { createMidiInput } from './midi-input.js';
-import { createChordResolver } from './chord-resolver/index.js';
-import { midiToNote, coerceToMidi } from './chord-resolver/notes.js';
+import { createChordClassifier } from './chord-classifier/index.js';
+import { midiToNote, coerceToMidi } from './chord-classifier/notes.js';
 
 const DEFAULT_SETTLE_MS = 60;
 const BASS_COUNT = 1;
@@ -11,10 +11,10 @@ const sortedMidiArray = (set) => [...set].sort((a, b) => a - b);
 const arraysEqual = (a, b) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
 
-const buildChordEvent = (bassMidi, trebleMidis, resolver) => ({
+const buildChordEvent = (bassMidi, trebleMidis, classifier) => ({
   bassNote: midiToNote(bassMidi),
   trebleNotes: trebleMidis.map(midiToNote),
-  chordName: resolver.resolve({ bassMidi, trebleMidis }),
+  chordName: classifier.classify({ bassMidi, trebleMidis }),
   _bassMidi: bassMidi,
   _trebleMidis: trebleMidis,
 });
@@ -25,10 +25,10 @@ export const createChordDetector = ({
   onChordStart,
   onChordEnd,
   onStateChange,
-  chordResolverOptions,
+  chordClassifierOptions,
 } = {}) => {
   const splitMidi = coerceToMidi(splitBassAndTrebleOn);
-  const resolver = createChordResolver(chordResolverOptions);
+  const classifier = createChordClassifier(chordClassifierOptions);
 
   let heldNotes = new Set();
   let activeChord = null;
@@ -55,7 +55,7 @@ export const createChordDetector = ({
     }
 
     if (isValid) {
-      activeChord = buildChordEvent(bass[0], treble, resolver);
+      activeChord = buildChordEvent(bass[0], treble, classifier);
       onChordStart?.(activeChord);
     }
   };

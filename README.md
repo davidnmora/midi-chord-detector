@@ -53,10 +53,10 @@ Then open **http://localhost:8000/demo/index.html** in Chrome or Edge and click 
 ```
 src/
   index.js                  public re-exports
-  chord-detector.js         orchestrator: held-notes, settle timer, event emission
+  chord-detector.js         MIDI orchestration: held-notes, settle timer, event emission
   midi-input.js             Web MIDI API wrapper
-  chord-resolver/
-    index.js                createChordResolver + resolve()
+  chord-classifier/         standalone: bass + treble notes → chord designation
+    index.js                createChordClassifier + classify()
     templates.js            chord templates (major, minor)
     notes.js                pitch-class arithmetic + note ↔ MIDI helpers
 demo/
@@ -64,9 +64,25 @@ demo/
   demo.js
 ```
 
+### Standalone chord classification
+
+Import `chord-classifier` on its own when you already have a bass note and treble notes — no MIDI required:
+
+```js
+import { createChordClassifier } from './src/chord-classifier/index.js';
+
+const classifier = createChordClassifier();
+
+classifier.classify({
+  bassMidi: 48,              // C3
+  trebleMidis: [63, 67, 72], // D#4, G4, C5
+});
+// → 'C minor'
+```
+
 ## Extending chord types
 
-Add entries to `src/chord-resolver/templates.js`:
+Add entries to `src/chord-classifier/templates.js`:
 
 ```js
 export const CHORD_TEMPLATES = [
@@ -81,6 +97,6 @@ Or pass custom templates directly:
 
 ```js
 createChordDetector({
-  chordResolverOptions: { templates: myTemplates },
+  chordClassifierOptions: { templates: myTemplates },
 });
 ```
