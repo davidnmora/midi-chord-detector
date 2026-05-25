@@ -106,8 +106,18 @@ $('connect-btn').addEventListener('click', async () => {
   const errorEl = $('connect-error');
   errorEl.classList.add('hidden');
 
+  if (!window.isSecureContext) {
+    const banner = $('no-midi-banner');
+    banner.textContent =
+      'Web MIDI requires a secure context. Open this page via http://localhost (not file:// or a remote http:// URL).';
+    banner.classList.remove('hidden');
+    return;
+  }
+
   if (!navigator.requestMIDIAccess) {
-    $('no-midi-banner').classList.remove('hidden');
+    const banner = $('no-midi-banner');
+    banner.textContent = 'Web MIDI API is not supported in this browser. Try Chrome or Edge.';
+    banner.classList.remove('hidden');
     return;
   }
 

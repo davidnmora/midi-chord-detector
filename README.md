@@ -40,7 +40,13 @@ A chord is valid when exactly **1 bass note** (≤ split) and **3 treble notes**
 
 ### Demo
 
-Open `demo/index.html` directly in Chrome or Edge (Web MIDI requires a secure context or localhost).
+The Web MIDI API requires a **secure context** — `file://` URLs and remote `http://` origins won't work. Serve the project locally and open it via `localhost`:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open **http://localhost:8000/demo/index.html** in Chrome or Edge and click **Connect MIDI**.
 
 ## Module layout
 
