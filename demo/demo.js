@@ -2,7 +2,43 @@ import { createChordDetector } from '../src/index.js';
 
 const $ = (id) => document.getElementById(id);
 
-const formatNote = ({ noteName, octave }) => `${noteName}${octave}`;
+const ESCAPE_HTML_PATTERN = /[&<>"']/g;
+const ESCAPE_HTML_REPLACEMENTS = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+const escapeHtml = (value) =>
+  String(value).replace(ESCAPE_HTML_PATTERN, (character) =>
+    character in ESCAPE_HTML_REPLACEMENTS ? ESCAPE_HTML_REPLACEMENTS[character] : character
+  );
+
+const octaveSubHtml = (octave) =>
+  `<sub class="inline align-baseline text-[0.72em] text-zinc-500">${escapeHtml(String(octave))}</sub>`;
+
+const formatNoteHtml = ({ noteName, octave }) =>
+  `${escapeHtml(noteName)}${octaveSubHtml(octave)}`;
+
+const LIVE_OUTPUT_ID = 'live-output';
+const LIVE_STATE_MUTED = 'muted';
+const LIVE_STATE_ACTIVE = 'active';
+const MIDI_SETUP_ID = 'midi-setup';
+const MIDI_SETUP_STATE_IDLE = 'idle';
+const MIDI_SETUP_STATE_LINKED = 'linked';
+
+const reflectMidiConnectedUi = (isConnected) => {
+  $(LIVE_OUTPUT_ID)?.setAttribute(
+    'data-live-state',
+    isConnected ? LIVE_STATE_ACTIVE : LIVE_STATE_MUTED
+  );
+  $(MIDI_SETUP_ID)?.setAttribute(
+    'data-midi-state',
+    isConnected ? MIDI_SETUP_STATE_LINKED : MIDI_SETUP_STATE_IDLE
+  );
+};
 
 const renderDeviceList = (inputs) => {
   const list = $('device-list');
@@ -61,17 +97,19 @@ const appendLogLine = (html) => {
 };
 
 const renderActiveChord = (chord) => {
+  const bassDisplay = $('bass-display');
+  const trebleDisplay = $('treble-display');
   if (!chord) {
     $('chord-display').textContent = '—';
     $('chord-display').className = 'text-4xl font-semibold text-zinc-600 tracking-tight';
-    $('bass-display').textContent = '—';
-    $('treble-display').textContent = '—';
+    bassDisplay.textContent = '—';
+    trebleDisplay.textContent = '—';
     return;
   }
   $('chord-display').textContent = chord.chordName;
   $('chord-display').className = 'text-4xl font-semibold text-white tracking-tight';
-  $('bass-display').textContent = formatNote(chord.bassNote);
-  $('treble-display').textContent = chord.trebleNotes.map(formatNote).join(', ');
+  bassDisplay.innerHTML = formatNoteHtml(chord.bassNote);
+  trebleDisplay.innerHTML = chord.trebleNotes.map(formatNoteHtml).join(', ');
 };
 
 let detector = null;
@@ -85,15 +123,17 @@ const buildDetector = () => {
     settleMs,
     onChordStart: (chord) => {
       renderActiveChord(chord);
-      const treble = chord.trebleNotes.map(formatNote).join(', ');
+      const treble = chord.trebleNotes.map(formatNoteHtml).join(', ');
       appendLogLine(
-        `<span class="text-indigo-400">▶ start:</span> <span class="text-white font-medium">${chord.chordName}</span> <span class="text-zinc-500">— ${formatNote(chord.bassNote)} / ${treble}</span>`
+        `<span class="text-indigo-400">▶ start:</span> <span class="text-white font-medium">${escapeHtml(
+          chord.chordName
+        )}</span> <span class="text-zinc-500">— ${formatNoteHtml(chord.bassNote)} / ${treble}</span>`
       );
     },
     onChordEnd: (chord) => {
       renderActiveChord(null);
       appendLogLine(
-        `<span class="text-zinc-500">■ end:&nbsp;&nbsp;</span> <span class="text-zinc-300">${chord.chordName}</span>`
+        `<span class="text-zinc-500">■ end:&nbsp;&nbsp;</span> <span class="text-zinc-300">${escapeHtml(chord.chordName)}</span>`
       );
     },
     onStateChange: (inputs) => {
@@ -128,6 +168,7 @@ $('connect-btn').addEventListener('click', async () => {
   try {
     await detector.connect();
     renderDeviceList(detector.listInputs());
+    reflectMidiConnectedUi(true);
     $('connect-btn').classList.add('hidden');
     $('disconnect-btn').classList.remove('hidden');
     appendLogLine('<span class="text-green-400">● connected</span>');
@@ -142,6 +183,7 @@ $('disconnect-btn').addEventListener('click', () => {
   detector = null;
   renderDeviceList([]);
   renderActiveChord(null);
+  reflectMidiConnectedUi(false);
   $('connect-btn').classList.remove('hidden');
   $('disconnect-btn').classList.add('hidden');
   appendLogLine('<span class="text-zinc-500">○ disconnected</span>');
@@ -153,7 +195,9 @@ $('input-select').addEventListener('change', async () => {
   try {
     await detector.connect({ inputName });
     renderDeviceList(detector.listInputs());
-    appendLogLine(`<span class="text-zinc-400">⇄ switched to</span> <span class="text-white">${inputName}</span>`);
+    appendLogLine(
+      `<span class="text-zinc-400">⇄ switched to</span> <span class="text-white">${escapeHtml(inputName)}</span>`
+    );
   } catch (err) {
     $('connect-error').textContent = err.message;
     $('connect-error').classList.remove('hidden');
