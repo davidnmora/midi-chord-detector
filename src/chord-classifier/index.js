@@ -16,13 +16,25 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
     intervalSet: new Set(intervals),
   }));
 
-  const classify = ({ bassMidi, trebleMidis }) => {
-    const rootPc = pitchClass(bassMidi);
-    const allPcs = new Set([bassMidi, ...trebleMidis].map(pitchClass));
-    const played = intervalsFromRoot(rootPc, allPcs);
+  const classifyTreble = (trebleMidis) => {
+    const treblePcs = new Set(trebleMidis.map(pitchClass));
+    for (const rootPc of treblePcs) {
+      const intervals = intervalsFromRoot(rootPc, treblePcs);
+      const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
+      if (match) return { rootPc, suffix: match.suffix };
+    }
+    return null;
+  };
 
-    const match = templateSets.find(({ intervalSet }) => setsEqual(played, intervalSet));
-    return match ? `${NOTE_NAMES_SHARP[rootPc]} ${match.suffix}` : 'unknown';
+  const classify = ({ bassMidi, trebleMidis }) => {
+    const trebleResult = classifyTreble(trebleMidis);
+    if (!trebleResult) return 'unknown';
+
+    const chordName = `${NOTE_NAMES_SHARP[trebleResult.rootPc]} ${trebleResult.suffix}`;
+    const bassPc = pitchClass(bassMidi);
+
+    if (bassPc === trebleResult.rootPc) return chordName;
+    return `${chordName} / ${NOTE_NAMES_SHARP[bassPc]}`;
   };
 
   return { classify };
