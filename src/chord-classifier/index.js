@@ -11,8 +11,9 @@ const intervalsFromRoot = (rootPc, pitchClasses) =>
   new Set([...pitchClasses].map((pc) => (pc - rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
 
 export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
-  const templateSets = templates.map(({ suffix, intervals }) => ({
+  const templateSets = templates.map(({ suffix, intervals, priority = 0 }) => ({
     suffix,
+    priority,
     intervalSet: new Set(intervals),
   }));
 
@@ -21,12 +22,15 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
     return [...treblePcs].flatMap((rootPc) => {
       const intervals = intervalsFromRoot(rootPc, treblePcs);
       const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
-      return match ? [{ rootPc, suffix: match.suffix }] : [];
+      return match ? [{ rootPc, suffix: match.suffix, priority: match.priority }] : [];
     });
   };
 
+  const highestPriority = (matches) =>
+    [...matches].sort((a, b) => b.priority - a.priority)[0];
+
   const chooseMatchByBass = (matches, bassPc) =>
-    matches.find(({ rootPc }) => rootPc === bassPc) ?? matches[0];
+    matches.find(({ rootPc }) => rootPc === bassPc) ?? highestPriority(matches);
 
   const classify = ({ bassMidi, trebleMidis }) => {
     const matches = findTrebleMatches(trebleMidis);
