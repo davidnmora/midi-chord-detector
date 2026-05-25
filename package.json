@@ -1,0 +1,10 @@
+{
+  "name": "midi-chord-detector",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Detect chords from a USB MIDI keyboard via the Web MIDI API",
+  "main": "src/index.js",
+  "scripts": {
+    "demo": "open demo/index.html"
+  }
+}

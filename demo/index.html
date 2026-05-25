@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MIDI Chord Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { mono: ['JetBrains Mono', 'Fira Code', 'monospace'] },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body class="bg-zinc-950 text-zinc-100 min-h-screen font-mono p-8">
+    <div class="max-w-3xl mx-auto space-y-6">
+
+      <header class="border-b border-zinc-800 pb-5">
+        <h1 class="text-2xl font-semibold tracking-tight text-white">MIDI Chord Detector</h1>
+        <p class="text-zinc-500 text-sm mt-1">Plug in your USB MIDI keyboard, hit Connect, and play.</p>
+      </header>
+
+      <!-- Web MIDI not supported notice -->
+      <div id="no-midi-banner" class="hidden bg-red-950 border border-red-700 text-red-300 rounded-lg px-4 py-3 text-sm">
+        Web MIDI API is not supported in this browser. Try Chrome or Edge.
+      </div>
+
+      <!-- Config + Connect -->
+      <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-4">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Configuration</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="space-y-1">
+            <span class="text-xs text-zinc-400">Split note (bass / treble)</span>
+            <input
+              id="split-note"
+              type="text"
+              value="C4"
+              class="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-zinc-500"
+            />
+          </label>
+          <label class="space-y-1">
+            <span class="text-xs text-zinc-400">Settle delay (ms)</span>
+            <input
+              id="settle-ms"
+              type="number"
+              value="60"
+              min="10"
+              max="500"
+              class="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-zinc-500"
+            />
+          </label>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            id="connect-btn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded transition-colors"
+          >
+            Connect MIDI
+          </button>
+          <button
+            id="disconnect-btn"
+            class="hidden bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium px-5 py-2 rounded transition-colors"
+          >
+            Disconnect
+          </button>
+          <span id="connect-error" class="text-red-400 text-xs hidden"></span>
+        </div>
+      </section>
+
+      <!-- MIDI Device Info -->
+      <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">MIDI Inputs</h2>
+          <span id="input-count" class="text-xs text-zinc-500">—</span>
+        </div>
+        <div id="device-list" class="space-y-2 text-xs text-zinc-500 italic">
+          Not connected
+        </div>
+        <div id="input-switcher" class="hidden space-y-1">
+          <span class="text-xs text-zinc-400">Active input</span>
+          <select
+            id="input-select"
+            class="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-zinc-500"
+          ></select>
+        </div>
+      </section>
+
+      <!-- Live note display -->
+      <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Current Chord</h2>
+        <div id="chord-display" class="text-4xl font-semibold text-zinc-600 tracking-tight">—</div>
+        <div class="flex gap-6 text-sm">
+          <div class="space-y-0.5">
+            <div class="text-xs text-zinc-500">Bass</div>
+            <div id="bass-display" class="text-zinc-400">—</div>
+          </div>
+          <div class="space-y-0.5">
+            <div class="text-xs text-zinc-500">Treble</div>
+            <div id="treble-display" class="text-zinc-400">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Event log -->
+      <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Event Log</h2>
+          <button id="clear-log" class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">Clear</button>
+        </div>
+        <div
+          id="event-log"
+          class="space-y-0.5 text-xs max-h-64 overflow-y-auto text-zinc-500 italic"
+        >
+          Waiting for events…
+        </div>
+      </section>
+
+    </div>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>
