@@ -3,10 +3,10 @@ import { createChordGater } from './chord-gater/index.js';
 import { createChordClassifier } from './chord-classifier/index.js';
 import { midiToNote } from './chord-classifier/notes.js';
 
-const buildChordEvent = (bassMidi, trebleMidis, classifier) => ({
+const buildChordEvent = (bassMidi, trebleMidis, classifier, bassAsRoot) => ({
   bassNote: midiToNote(bassMidi),
   trebleNotes: trebleMidis.map(midiToNote),
-  chordName: classifier.classify({ bassMidi, trebleMidis }),
+  chordName: classifier.classify({ bassMidi, trebleMidis, bassAsRoot }),
   _bassMidi: bassMidi,
   _trebleMidis: trebleMidis,
 });
@@ -18,6 +18,7 @@ export const createChordDetector = ({
   onChordEnd,
   onStateChange,
   chordClassifierOptions,
+  getBassAsRoot,
 } = {}) => {
   const classifier = createChordClassifier(chordClassifierOptions);
 
@@ -27,7 +28,7 @@ export const createChordDetector = ({
     splitBassAndTrebleOn,
     settleMs,
     onStableChordCandidate: ({ bassMidi, trebleMidis }) => {
-      activeChordEvent = buildChordEvent(bassMidi, trebleMidis, classifier);
+      activeChordEvent = buildChordEvent(bassMidi, trebleMidis, classifier, getBassAsRoot?.() ?? false);
       onChordStart?.(activeChordEvent);
     },
     onStableChordRelease: () => {
@@ -44,6 +45,13 @@ export const createChordDetector = ({
     onStateChange,
   });
 
+  const reclassify = () => {
+    if (!activeChordEvent) return;
+    const { _bassMidi, _trebleMidis } = activeChordEvent;
+    activeChordEvent = buildChordEvent(_bassMidi, _trebleMidis, classifier, getBassAsRoot?.() ?? false);
+    onChordStart?.(activeChordEvent);
+  };
+
   const connect = (options) => midiInput.connect(options);
   const disconnect = () => {
     midiInput.disconnect();
@@ -54,6 +62,7 @@ export const createChordDetector = ({
   return {
     connect,
     disconnect,
+    reclassify,
     listInputs: midiInput.listInputs,
     getActiveInput: midiInput.getActiveInput,
   };

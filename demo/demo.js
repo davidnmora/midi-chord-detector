@@ -121,6 +121,7 @@ const buildDetector = () => {
   return createChordDetector({
     splitBassAndTrebleOn,
     settleMs,
+    getBassAsRoot: () => $('bass-as-root').checked,
     onChordStart: (chord) => {
       renderActiveChord(chord);
       const treble = chord.trebleNotes.map(formatNoteHtml).join(', ');
@@ -214,4 +215,8 @@ $('input-select').addEventListener('change', async () => {
 
 $('clear-log').addEventListener('click', () => {
   $('event-log').innerHTML = '<span class="text-zinc-500 italic">Waiting for events…</span>';
+});
+
+$('bass-as-root').addEventListener('change', () => {
+  detector?.reclassify();
 });

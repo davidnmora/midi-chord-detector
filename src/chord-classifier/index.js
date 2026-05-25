@@ -32,7 +32,20 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
   const chooseMatchByBass = (matches, bassPc) =>
     matches.find(({ rootPc }) => rootPc === bassPc) ?? highestPriority(matches);
 
-  const classify = ({ bassMidi, trebleMidis }) => {
+  const findMatchWithBassAsRoot = (bassMidi, trebleMidis) => {
+    const bassPc = pitchClass(bassMidi);
+    const allPcs = new Set([bassPc, ...trebleMidis.map(pitchClass)]);
+    const intervals = intervalsFromRoot(bassPc, allPcs);
+    const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
+    return match ? { rootPc: bassPc, suffix: match.suffix } : null;
+  };
+
+  const classify = ({ bassMidi, trebleMidis, bassAsRoot = false }) => {
+    if (bassAsRoot) {
+      const match = findMatchWithBassAsRoot(bassMidi, trebleMidis);
+      if (match) return `${NOTE_NAMES[match.rootPc]} ${match.suffix}`;
+    }
+
     const matches = findTrebleMatches(trebleMidis);
     if (matches.length === 0) return 'unknown';
 
