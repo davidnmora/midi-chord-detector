@@ -32,11 +32,15 @@ detector.disconnect();
     { noteName: 'G',  octave: 4 },
     { noteName: 'C',  octave: 5 },
   ],
-  chordName: 'C minor',   // 'C major' | 'C minor' | 'unknown'
+  chordName: 'C minor',   // e.g. 'C major', 'G sus4', 'C dim7 / Bb', 'unknown'
 }
 ```
 
 A chord is valid when exactly **1 bass note** (≤ split) and **3 treble notes** (> split) are held simultaneously.
+
+### Bass as a root hint
+
+Some treble shapes are ambiguous — `C, D, G` is both `C sus2` and `G sus4`, and a fully-diminished 7th has four equally valid roots. The classifier collects every valid interpretation of the treble notes and uses the **bass pitch class** to pick the root: if the bass matches one of the candidate roots, that interpretation wins; otherwise the first match is used and the bass is shown as a slash (e.g. `C sus2 / D`). Unambiguous chords (major/minor/etc.) behave exactly as before.
 
 ### Demo
 
@@ -110,10 +114,16 @@ Add entries to `src/chord-classifier/templates.js`:
 
 ```js
 export const CHORD_TEMPLATES = [
-  { suffix: 'major',     intervals: [0, 4, 7] },
-  { suffix: 'minor',     intervals: [0, 3, 7] },
-  { suffix: 'diminished', intervals: [0, 3, 6] },    // add more here
+  { suffix: 'major',      intervals: [0, 4, 7] },
+  { suffix: 'minor',      intervals: [0, 3, 7] },
+  { suffix: 'diminished', intervals: [0, 3, 6] },
   { suffix: 'augmented',  intervals: [0, 4, 8] },
+  { suffix: 'sus2',       intervals: [0, 2, 7] },
+  { suffix: 'sus4',       intervals: [0, 5, 7] },
+  { suffix: 'maj7',       intervals: [0, 4, 7, 11] },
+  { suffix: '7',          intervals: [0, 4, 7, 10] },
+  { suffix: 'm7b5',       intervals: [0, 3, 6, 10] },  // half-diminished 7
+  { suffix: 'dim7',       intervals: [0, 3, 6, 9]  },  // fully-diminished 7
 ];
 ```
 

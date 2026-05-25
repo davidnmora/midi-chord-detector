@@ -16,25 +16,26 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
     intervalSet: new Set(intervals),
   }));
 
-  const classifyTreble = (trebleMidis) => {
+  const findTrebleMatches = (trebleMidis) => {
     const treblePcs = new Set(trebleMidis.map(pitchClass));
-    for (const rootPc of treblePcs) {
+    return [...treblePcs].flatMap((rootPc) => {
       const intervals = intervalsFromRoot(rootPc, treblePcs);
       const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
-      if (match) return { rootPc, suffix: match.suffix };
-    }
-    return null;
+      return match ? [{ rootPc, suffix: match.suffix }] : [];
+    });
   };
 
+  const chooseMatchByBass = (matches, bassPc) =>
+    matches.find(({ rootPc }) => rootPc === bassPc) ?? matches[0];
+
   const classify = ({ bassMidi, trebleMidis }) => {
-    const trebleResult = classifyTreble(trebleMidis);
-    if (!trebleResult) return 'unknown';
+    const matches = findTrebleMatches(trebleMidis);
+    if (matches.length === 0) return 'unknown';
 
-    const chordName = `${NOTE_NAMES[trebleResult.rootPc]} ${trebleResult.suffix}`;
     const bassPc = pitchClass(bassMidi);
-
-    if (bassPc === trebleResult.rootPc) return chordName;
-    return `${chordName} / ${NOTE_NAMES[bassPc]}`;
+    const { rootPc, suffix } = chooseMatchByBass(matches, bassPc);
+    const chordName = `${NOTE_NAMES[rootPc]} ${suffix}`;
+    return bassPc === rootPc ? chordName : `${chordName} / ${NOTE_NAMES[bassPc]}`;
   };
 
   return { classify };
