@@ -142,7 +142,7 @@ const buildDetector = () => {
   });
 };
 
-$('connect-btn').addEventListener('click', async () => {
+const attemptConnect = async () => {
   const errorEl = $('connect-error');
   errorEl.classList.add('hidden');
 
@@ -175,6 +175,14 @@ $('connect-btn').addEventListener('click', async () => {
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove('hidden');
+  }
+};
+
+$('connect-btn').addEventListener('click', attemptConnect);
+
+window.addEventListener('load', async () => {
+  if (window.isSecureContext && navigator.requestMIDIAccess) {
+    await attemptConnect();
   }
 });
 
