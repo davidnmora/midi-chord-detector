@@ -35,9 +35,11 @@ detector.disconnect();
     { noteName: 'C',  octave: 5 },
   ],
   chordName: 'C minor',   // e.g. 'C major', 'G sus4', 'C dim7 / Bb', 'unknown'
-  chord: { rootPc: 0, suffix: 'minor' }, // structured form; bassPc when slash (e.g. C major / G), or null when unknown
+  chord: { rootPitchClass: 0, suffix: 'minor' }, // structured form; bassPitchClass when slash (e.g. C major / G), or null when unknown
 }
 ```
+
+**Pitch class** is the note without its octave — one of 12 chromatic steps (C=0 … B=11). Middle C (MIDI 60), C5, and C3 all share pitch class 0. Chords are matched on pitch classes because they're defined by intervals, not absolute pitch.
 
 A chord is valid when exactly **1 bass note** (≤ split) and **3 treble notes** (> split) are held simultaneously.
 
@@ -122,17 +124,17 @@ classifier.classify({
   bassMidi: 48,              // C3
   trebleMidis: [63, 67, 72], // D#4, G4, C5
 });
-// → { rootPc: 0, suffix: 'minor', bassPc: 0 }
+// → { rootPitchClass: 0, suffix: 'minor', bassPitchClass: 0 }
 
 classifier.classify({
   bassMidi: 48,              // C3
   trebleMidis: [64, 67, 71], // E4, G4, B4
   bassAsRoot: true,
 });
-// → { rootPc: 0, suffix: 'maj7' }  (bass included as a chord tone, rooted on C)
+// → { rootPitchClass: 0, suffix: 'maj7' }  (bass included as a chord tone, rooted on C)
 
-formatChordName({ rootPc: 0, suffix: 'minor' });        // → 'C minor'
-formatChordName({ rootPc: 0, suffix: 'major', bassPc: 4 }); // → 'C major / E'
+formatChordName({ rootPitchClass: 0, suffix: 'minor' });        // → 'C minor'
+formatChordName({ rootPitchClass: 0, suffix: 'major', bassPitchClass: 4 }); // → 'C major / E'
 formatChordName(null);                                   // → 'unknown'
 ```
 
@@ -169,9 +171,9 @@ const search = createProgressionSearch({
   ],
 });
 
-search.append({ rootPc: 2, suffix: 'major' });   // D major
-search.append({ rootPc: 9, suffix: 'major' });   // A major
-search.append({ rootPc: 11, suffix: 'minor' });  // B minor
+search.append({ rootPitchClass: 2, suffix: 'major' });   // D major
+search.append({ rootPitchClass: 9, suffix: 'major' });   // A major
+search.append({ rootPitchClass: 11, suffix: 'minor' });  // B minor
 
 search.getResults();
 // → [{ song: { title: 'Hey, Soul Sister', ..., parsedProgression: [...] },

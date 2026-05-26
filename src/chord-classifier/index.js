@@ -9,35 +9,35 @@ const setsEqual = (a, b) => {
   return true;
 };
 
-const intervalsFromRoot = (rootPc, pitchClasses) =>
-  new Set([...pitchClasses].map((pc) => (pc - rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
+const intervalsFromRoot = (rootPitchClass, pitchClasses) =>
+  new Set([...pitchClasses].map((notePitchClass) => (notePitchClass - rootPitchClass + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
 
-export const hasDistinctBass = ({ rootPc, bassPc }) =>
-  bassPc !== undefined && bassPc !== rootPc;
+export const hasDistinctBass = ({ rootPitchClass, bassPitchClass }) =>
+  bassPitchClass !== undefined && bassPitchClass !== rootPitchClass;
 
 export const bassIntervalFromRoot = (chord) =>
   hasDistinctBass(chord)
-    ? (chord.bassPc - chord.rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE
+    ? (chord.bassPitchClass - chord.rootPitchClass + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE
     : null;
 
 export const structuredChordFromClassification = (classification) => {
   if (!classification) return null;
-  const { rootPc, suffix, bassPc } = classification;
-  return hasDistinctBass({ rootPc, bassPc })
-    ? { rootPc, suffix, bassPc }
-    : { rootPc, suffix };
+  const { rootPitchClass, suffix, bassPitchClass } = classification;
+  return hasDistinctBass({ rootPitchClass, bassPitchClass })
+    ? { rootPitchClass, suffix, bassPitchClass }
+    : { rootPitchClass, suffix };
 };
 
 export const chordsAreEqual = (a, b) =>
-  a.rootPc === b.rootPc &&
+  a.rootPitchClass === b.rootPitchClass &&
   a.suffix === b.suffix &&
-  (hasDistinctBass(a) ? a.bassPc : a.rootPc) === (hasDistinctBass(b) ? b.bassPc : b.rootPc);
+  (hasDistinctBass(a) ? a.bassPitchClass : a.rootPitchClass) === (hasDistinctBass(b) ? b.bassPitchClass : b.rootPitchClass);
 
 export const formatChordName = (chord) => {
   if (!chord) return UNKNOWN_CHORD_NAME;
-  const { rootPc, suffix, bassPc } = chord;
-  const base = `${NOTE_NAMES[rootPc]} ${suffix}`;
-  return hasDistinctBass(chord) ? `${base} / ${NOTE_NAMES[bassPc]}` : base;
+  const { rootPitchClass, suffix, bassPitchClass } = chord;
+  const base = `${NOTE_NAMES[rootPitchClass]} ${suffix}`;
+  return hasDistinctBass(chord) ? `${base} / ${NOTE_NAMES[bassPitchClass]}` : base;
 };
 
 export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
@@ -48,40 +48,40 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
   }));
 
   const findTrebleMatches = (trebleMidis) => {
-    const treblePcs = new Set(trebleMidis.map(pitchClass));
-    return [...treblePcs].flatMap((rootPc) => {
-      const intervals = intervalsFromRoot(rootPc, treblePcs);
+    const treblePitchClasses = new Set(trebleMidis.map(pitchClass));
+    return [...treblePitchClasses].flatMap((rootPitchClass) => {
+      const intervals = intervalsFromRoot(rootPitchClass, treblePitchClasses);
       const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
-      return match ? [{ rootPc, suffix: match.suffix, priority: match.priority }] : [];
+      return match ? [{ rootPitchClass, suffix: match.suffix, priority: match.priority }] : [];
     });
   };
 
   const highestPriority = (matches) =>
     [...matches].sort((a, b) => b.priority - a.priority)[0];
 
-  const chooseMatchByBass = (matches, bassPc) =>
-    matches.find(({ rootPc }) => rootPc === bassPc) ?? highestPriority(matches);
+  const chooseMatchByBass = (matches, bassPitchClass) =>
+    matches.find(({ rootPitchClass }) => rootPitchClass === bassPitchClass) ?? highestPriority(matches);
 
   const findMatchWithBassAsRoot = (bassMidi, trebleMidis) => {
-    const bassPc = pitchClass(bassMidi);
-    const allPcs = new Set([bassPc, ...trebleMidis.map(pitchClass)]);
-    const intervals = intervalsFromRoot(bassPc, allPcs);
+    const bassPitchClass = pitchClass(bassMidi);
+    const allPitchClasses = new Set([bassPitchClass, ...trebleMidis.map(pitchClass)]);
+    const intervals = intervalsFromRoot(bassPitchClass, allPitchClasses);
     const match = templateSets.find(({ intervalSet }) => setsEqual(intervals, intervalSet));
-    return match ? { rootPc: bassPc, suffix: match.suffix } : null;
+    return match ? { rootPitchClass: bassPitchClass, suffix: match.suffix } : null;
   };
 
   const classify = ({ bassMidi, trebleMidis, bassAsRoot = false }) => {
     if (bassAsRoot) {
       const match = findMatchWithBassAsRoot(bassMidi, trebleMidis);
-      if (match) return { rootPc: match.rootPc, suffix: match.suffix };
+      if (match) return { rootPitchClass: match.rootPitchClass, suffix: match.suffix };
     }
 
     const matches = findTrebleMatches(trebleMidis);
     if (matches.length === 0) return null;
 
-    const bassPc = pitchClass(bassMidi);
-    const { rootPc, suffix } = chooseMatchByBass(matches, bassPc);
-    return { rootPc, suffix, bassPc };
+    const bassPitchClass = pitchClass(bassMidi);
+    const { rootPitchClass, suffix } = chooseMatchByBass(matches, bassPitchClass);
+    return { rootPitchClass, suffix, bassPitchClass };
   };
 
   return { classify };

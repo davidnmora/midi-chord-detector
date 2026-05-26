@@ -1,13 +1,13 @@
 import { bassIntervalFromRoot } from '../chord-classifier/index.js';
 import { NOTES_PER_OCTAVE } from '../chord-classifier/notes.js';
 
-const intervalBetweenRoots = (fromPc, toPc) =>
-  (toPc - fromPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE;
+const intervalBetweenRoots = (fromRootPitchClass, toRootPitchClass) =>
+  (toRootPitchClass - fromRootPitchClass + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE;
 
 export const toAbstractProgression = (chords) => ({
   suffixes: chords.map(({ suffix }) => suffix),
-  deltas: chords.slice(1).map(({ rootPc }, i) =>
-    intervalBetweenRoots(chords[i].rootPc, rootPc)
+  deltas: chords.slice(1).map(({ rootPitchClass }, i) =>
+    intervalBetweenRoots(chords[i].rootPitchClass, rootPitchClass)
   ),
   bassIntervals: chords.map(bassIntervalFromRoot),
 });

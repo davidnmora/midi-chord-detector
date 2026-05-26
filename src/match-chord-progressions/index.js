@@ -3,11 +3,11 @@ import { noteNameToPitchClass } from '../chord-classifier/notes.js';
 import { findSubProgressionMatches } from './match.js';
 
 const parseProgressionChord = ({ noteName, suffix, bassNoteName }) => {
-  const rootPc = noteNameToPitchClass(noteName);
-  const bassPc = bassNoteName ? noteNameToPitchClass(bassNoteName) : undefined;
-  const chord = hasDistinctBass({ rootPc, bassPc })
-    ? { rootPc, suffix, bassPc }
-    : { rootPc, suffix };
+  const rootPitchClass = noteNameToPitchClass(noteName);
+  const bassPitchClass = bassNoteName ? noteNameToPitchClass(bassNoteName) : undefined;
+  const chord = hasDistinctBass({ rootPitchClass, bassPitchClass })
+    ? { rootPitchClass, suffix, bassPitchClass }
+    : { rootPitchClass, suffix };
   return { ...chord, display: formatChordName(chord) };
 };
 

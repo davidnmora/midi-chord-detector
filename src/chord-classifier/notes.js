@@ -15,9 +15,9 @@ export const midiToNote = (midi) => ({
 const canonicalNoteName = (noteName) => ENHARMONIC_EQUIVALENTS[noteName] ?? noteName;
 
 export const noteNameToPitchClass = (noteName) => {
-  const pc = NOTE_NAMES.indexOf(canonicalNoteName(noteName));
-  if (pc === -1) throw new Error(`Invalid note name: "${noteName}"`);
-  return pc;
+  const notePitchClass = NOTE_NAMES.indexOf(canonicalNoteName(noteName));
+  if (notePitchClass === -1) throw new Error(`Invalid note name: "${noteName}"`);
+  return notePitchClass;
 };
 
 export const noteToMidi = ({ noteName, octave }) =>
