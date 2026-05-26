@@ -1,8 +1,6 @@
 import { coerceToMidi } from '../chord-classifier/notes.js';
 
 const DEFAULT_SETTLE_MS = 60;
-const BASS_COUNT = 1;
-const MIN_TREBLE_COUNT = 3;
 
 const sortedMidiArray = (set) => [...set].sort((a, b) => a - b);
 
@@ -26,7 +24,7 @@ export const createChordGater = ({
     const sorted = sortedMidiArray(heldNotes);
     const bass = sorted.filter((m) => m <= splitMidi);
     const treble = sorted.filter((m) => m > splitMidi);
-    const isValid = bass.length === BASS_COUNT && treble.length >= MIN_TREBLE_COUNT;
+    const isValid = bass.length >= 1 && treble.length >= 1;
 
     const candidateMatchesActive =
       activeStableMidi &&

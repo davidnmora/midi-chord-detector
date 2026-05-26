@@ -1,4 +1,10 @@
 import { createChordDetector } from '../src/index.js';
+import {
+  createProgressionSearch,
+  formatChordShorthand,
+  isPositionInMatch,
+} from '../src/match-chord-progressions/index.js';
+import { SONGS } from './songs.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,7 +26,7 @@ const octaveSubHtml = (octave) =>
   `<sub class="inline align-baseline text-[0.72em] text-zinc-500">${escapeHtml(String(octave))}</sub>`;
 
 const formatNoteHtml = ({ noteName, octave }) =>
-  `${escapeHtml(noteName)}${octaveSubHtml(octave)}`;
+  `<span class="text-white">${escapeHtml(noteName)}</span>${octaveSubHtml(octave)}`;
 
 const LIVE_OUTPUT_ID = 'live-output';
 const LIVE_STATE_MUTED = 'muted';
@@ -112,6 +118,71 @@ const renderActiveChord = (chord) => {
   trebleDisplay.innerHTML = chord.trebleNotes.map(formatNoteHtml).join(', ');
 };
 
+const search = createProgressionSearch({ songs: SONGS });
+
+const SEARCH_PLACEHOLDER_CLASS = 'text-sm text-zinc-500 italic min-h-[1.5rem]';
+const SEARCH_FILLED_CLASS = 'text-sm text-white min-h-[1.5rem] flex flex-wrap items-center gap-2';
+const SEARCH_ARROW = '<span class="text-zinc-600">→</span>';
+const SEARCH_CHIP_CLASS = 'bg-indigo-950/60 border border-indigo-800/60 rounded px-2 py-0.5';
+const HIGHLIGHTED_CHORD_CLASS = 'bg-indigo-700 text-white rounded px-1.5 py-0.5 font-medium';
+const PLAIN_CHORD_CLASS = 'text-zinc-400 px-1.5 py-0.5';
+const MATCHED_SONG_CARD_CLASS = 'p-2.5 bg-indigo-950/20 border border-indigo-900/40 rounded space-y-1';
+const PLAIN_SONG_CARD_CLASS = 'p-2.5 border border-zinc-800 rounded space-y-1';
+
+const renderSearchProgression = () => {
+  const display = $('search-progression');
+  const chords = search.getSearchProgression();
+  if (chords.length === 0) {
+    display.className = SEARCH_PLACEHOLDER_CLASS;
+    display.textContent = 'Play a chord to start searching…';
+    return;
+  }
+  display.className = SEARCH_FILLED_CLASS;
+  display.innerHTML = chords
+    .map((chord) => `<span class="${SEARCH_CHIP_CLASS}">${escapeHtml(formatChordShorthand(chord))}</span>`)
+    .join(SEARCH_ARROW);
+};
+
+const renderProgressionChords = ({ parsedProgression, matches }) => {
+  const songLength = parsedProgression.length;
+  return parsedProgression
+    .map((chord, position) => {
+      const highlighted = matches.some((match) => isPositionInMatch(position, match, songLength));
+      const cls = highlighted ? HIGHLIGHTED_CHORD_CLASS : PLAIN_CHORD_CLASS;
+      return `<span class="${cls}">${escapeHtml(chord.display)}</span>`;
+    })
+    .join('<span class="text-zinc-700">·</span>');
+};
+
+const renderSongResult = ({ song, matches }) => `
+  <div class="${matches.length > 0 ? MATCHED_SONG_CARD_CLASS : PLAIN_SONG_CARD_CLASS}">
+    <div>
+      <span class="text-white font-medium">${escapeHtml(song.title)}</span>
+      <span class="text-zinc-500"> — ${escapeHtml(song.artist)}</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-1">
+      ${renderProgressionChords({ parsedProgression: song.parsedProgression, matches })}
+    </div>
+  </div>
+`;
+
+const renderSearchResults = () => {
+  const list = $('search-results');
+  const results = search.getResults();
+  const hasSearch = search.getSearchProgression().length > 0;
+  if (hasSearch && results.length === 0) {
+    list.innerHTML =
+      '<div class="text-zinc-500 italic">No songs match this progression. Click Clear to start over.</div>';
+    return;
+  }
+  list.innerHTML = results.map(renderSongResult).join('');
+};
+
+const refreshSearch = () => {
+  renderSearchProgression();
+  renderSearchResults();
+};
+
 let detector = null;
 
 const buildDetector = () => {
@@ -124,6 +195,10 @@ const buildDetector = () => {
     getBassAsRoot: () => $('bass-as-root').checked,
     onChordStart: (chord) => {
       renderActiveChord(chord);
+      if (chord.chord) {
+        search.append(chord.chord);
+        refreshSearch();
+      }
       const treble = chord.trebleNotes.map(formatNoteHtml).join(', ');
       appendLogLine(
         `<span class="text-indigo-400">▶ start:</span> <span class="text-white font-medium">${escapeHtml(
@@ -216,6 +291,13 @@ $('input-select').addEventListener('change', async () => {
 $('clear-log').addEventListener('click', () => {
   $('event-log').innerHTML = '<span class="text-zinc-500 italic">Waiting for events…</span>';
 });
+
+$('clear-search').addEventListener('click', () => {
+  search.clear();
+  refreshSearch();
+});
+
+refreshSearch();
 
 $('bass-as-root').addEventListener('change', () => {
   detector?.reclassify();

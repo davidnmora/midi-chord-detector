@@ -59,6 +59,27 @@
           </label>
         </section>
 
+        <!-- Search Songs by Chord -->
+        <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Search Songs by Chord</h2>
+            <button id="clear-search" class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">Clear</button>
+          </div>
+          <p class="text-xs text-zinc-500 leading-relaxed">
+            Play chords in any key — matches by chord type and intervals between roots, not absolute pitch.
+          </p>
+          <div
+            id="search-progression"
+            class="text-sm text-zinc-500 italic min-h-[1.5rem]"
+          >
+            Play a chord to start searching…
+          </div>
+          <div
+            id="search-results"
+            class="space-y-1.5 text-xs max-h-72 overflow-y-auto"
+          ></div>
+        </section>
+
         <!-- Event log -->
         <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
           <div class="flex items-center justify-between">

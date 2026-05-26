@@ -1,6 +1,8 @@
 import { NOTES_PER_OCTAVE, NOTE_NAMES, pitchClass } from './notes.js';
 import { CHORD_TEMPLATES } from './templates.js';
 
+export const UNKNOWN_CHORD_NAME = 'unknown';
+
 const setsEqual = (a, b) => {
   if (a.size !== b.size) return false;
   for (const item of a) if (!b.has(item)) return false;
@@ -9,6 +11,15 @@ const setsEqual = (a, b) => {
 
 const intervalsFromRoot = (rootPc, pitchClasses) =>
   new Set([...pitchClasses].map((pc) => (pc - rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
+
+const hasDistinctBass = ({ rootPc, bassPc }) => bassPc !== undefined && bassPc !== rootPc;
+
+export const formatChordName = (chord) => {
+  if (!chord) return UNKNOWN_CHORD_NAME;
+  const { rootPc, suffix, bassPc } = chord;
+  const base = `${NOTE_NAMES[rootPc]} ${suffix}`;
+  return hasDistinctBass(chord) ? `${base} / ${NOTE_NAMES[bassPc]}` : base;
+};
 
 export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
   const templateSets = templates.map(({ suffix, intervals, priority = 0 }) => ({
@@ -43,16 +54,15 @@ export const createChordClassifier = ({ templates = CHORD_TEMPLATES } = {}) => {
   const classify = ({ bassMidi, trebleMidis, bassAsRoot = false }) => {
     if (bassAsRoot) {
       const match = findMatchWithBassAsRoot(bassMidi, trebleMidis);
-      if (match) return `${NOTE_NAMES[match.rootPc]} ${match.suffix}`;
+      if (match) return { rootPc: match.rootPc, suffix: match.suffix };
     }
 
     const matches = findTrebleMatches(trebleMidis);
-    if (matches.length === 0) return 'unknown';
+    if (matches.length === 0) return null;
 
     const bassPc = pitchClass(bassMidi);
     const { rootPc, suffix } = chooseMatchByBass(matches, bassPc);
-    const chordName = `${NOTE_NAMES[rootPc]} ${suffix}`;
-    return bassPc === rootPc ? chordName : `${chordName} / ${NOTE_NAMES[bassPc]}`;
+    return { rootPc, suffix, bassPc };
   };
 
   return { classify };

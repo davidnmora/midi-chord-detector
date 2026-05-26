@@ -35,6 +35,7 @@ detector.disconnect();
     { noteName: 'C',  octave: 5 },
   ],
   chordName: 'C minor',   // e.g. 'C major', 'G sus4', 'C dim7 / Bb', 'unknown'
+  chord: { rootPc: 0, suffix: 'minor' }, // structured form, or null when unknown
 }
 ```
 
@@ -75,12 +76,17 @@ src/
   chord-gater/              held notes + settle + bass/treble split → stable candidates
     index.js                createChordGater
   chord-classifier/         standalone: bass + treble notes → chord designation
-    index.js                createChordClassifier + classify()
+    index.js                createChordClassifier + classify() + formatChordName
     templates.js            chord templates (major, minor)
     notes.js                pitch-class arithmetic + note ↔ MIDI helpers
+  match-chord-progressions/ key-agnostic chord-progression search
+    index.js                createProgressionSearch
+    parse.js                chord shorthand ↔ { rootPc, suffix }
+    match.js                abstract progression + sub-progression matching
 demo/
   index.html
   demo.js
+  songs.js                  example song catalog used by the search demo
 ```
 
 ### Stable chord gate (without MIDI)
@@ -109,7 +115,7 @@ gate.dispose(); // clears timer and notifies release if a chord was active
 Import `chord-classifier` on its own when you already have a bass note and treble notes — no MIDI required:
 
 ```js
-import { createChordClassifier } from './src/chord-classifier/index.js';
+import { createChordClassifier, formatChordName } from './src/chord-classifier/index.js';
 
 const classifier = createChordClassifier();
 
@@ -117,15 +123,49 @@ classifier.classify({
   bassMidi: 48,              // C3
   trebleMidis: [63, 67, 72], // D#4, G4, C5
 });
-// → 'C minor'
+// → { rootPc: 0, suffix: 'minor', bassPc: 0 }
 
 classifier.classify({
   bassMidi: 48,              // C3
   trebleMidis: [64, 67, 71], // E4, G4, B4
   bassAsRoot: true,
 });
-// → 'C maj7'  (bass included as a chord tone, rooted on C)
+// → { rootPc: 0, suffix: 'maj7' }  (bass included as a chord tone, rooted on C)
+
+formatChordName({ rootPc: 0, suffix: 'minor' });        // → 'C minor'
+formatChordName({ rootPc: 0, suffix: 'major', bassPc: 4 }); // → 'C major / E'
+formatChordName(null);                                   // → 'unknown'
 ```
+
+`classify()` returns `null` when no template matches. `formatChordName` accepts that and returns `'unknown'`.
+
+### Searching songs by chord progression
+
+`match-chord-progressions` matches user-played chords against a song catalog **abstractly**: matching is on chord *types* and the *intervals between roots*, not absolute pitch. So a played `D → A → Bm` (in any key) matches a song's `C → G → Am` (I-V-vi anywhere), and a `ii-V-I` shape matches across all keys.
+
+```js
+import { createProgressionSearch, parseChordShorthand } from './src/match-chord-progressions/index.js';
+
+const search = createProgressionSearch({
+  songs: [
+    { title: "Hey, Soul Sister", artist: 'Train',  progression: 'C G Am F' },
+    { title: 'Sunday Morning',   artist: 'Maroon 5', progression: 'Dm7 G7 Cmaj7' },
+  ],
+});
+
+const { rootPc, suffix } = parseChordShorthand('D');
+search.append({ rootPc, suffix });
+search.append(parseChordShorthand('A'));
+search.append(parseChordShorthand('Bm'));
+
+search.getResults();
+// → [{ song: { title: 'Hey, Soul Sister', ..., parsedProgression: [...] },
+//      matches: [{ start: 0, length: 3 }] }]
+
+search.clear();
+```
+
+A match is any contiguous window in the song's progression (with wrap-around for looped songs) whose chord suffixes and root-to-root semitone deltas match the search.
 
 ## Extending chord types
 

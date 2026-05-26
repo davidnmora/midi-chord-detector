@@ -1,0 +1,16 @@
+export const SONGS = [
+  { title: 'Hey, Soul Sister',                artist: 'Train',             progression: 'C G Am F' },
+  { title: 'Let It Be',                       artist: 'The Beatles',       progression: 'C G Am F' },
+  { title: 'No Woman No Cry',                 artist: 'Bob Marley',        progression: 'C G Am F' },
+  { title: "Don't Stop Believin'",            artist: 'Journey',           progression: 'E B C#m A' },
+  { title: 'Sunday Morning',                  artist: 'Maroon 5',          progression: 'Dm7 G7 Cmaj7' },
+  { title: 'Fly Me To The Moon',              artist: 'Frank Sinatra',     progression: 'Am7 Dm7 G7 Cmaj7' },
+  { title: 'Autumn Leaves',                   artist: 'Jazz Standard',     progression: 'Am7 D7 Gmaj7 Cmaj7 F#m7b5 B7 Em' },
+  { title: 'What Goes Around... Comes Around', artist: 'Justin Timberlake', progression: 'Am C G D' },
+  { title: 'Zombie',                          artist: 'The Cranberries',   progression: 'Em C G D' },
+  { title: 'Country Roads',                   artist: 'John Denver',       progression: 'G Em D C' },
+  { title: 'Stand By Me',                     artist: 'Ben E. King',       progression: 'A F#m D E' },
+  { title: 'Despacito',                       artist: 'Luis Fonsi',        progression: 'Bm G D A' },
+  { title: 'Creep',                           artist: 'Radiohead',         progression: 'G B C Cm' },
+  { title: 'Wonderful Tonight',               artist: 'Eric Clapton',      progression: 'G D C D' },
+];
