@@ -179,6 +179,17 @@ const refreshSearch = () => {
   renderSearchResults();
 };
 
+const chordsAreEqual = (a, b) =>
+  a.rootPc === b.rootPc && a.suffix === b.suffix;
+
+const appendChordIfNew = (chord) => {
+  const progression = search.getSearchProgression();
+  const lastChord = progression[progression.length - 1];
+  if (lastChord && chordsAreEqual(chord, lastChord)) return;
+  search.append(chord);
+  refreshSearch();
+};
+
 const ESCAPE_KEY = 'Escape';
 
 const clearSearch = () => {
@@ -199,8 +210,7 @@ const buildDetector = () => {
     onChordStart: (chord) => {
       renderActiveChord(chord);
       if (chord.chord) {
-        search.append(chord.chord);
-        refreshSearch();
+        appendChordIfNew(chord.chord);
       }
       const treble = chord.trebleNotes.map(formatNoteHtml).join(', ');
       appendLogLine(
