@@ -1,9 +1,5 @@
-import { createChordDetector } from '../src/index.js';
-import {
-  createProgressionSearch,
-  formatChordShorthand,
-  isPositionInMatch,
-} from '../src/match-chord-progressions/index.js';
+import { createChordDetector, formatChordName } from '../src/index.js';
+import { createProgressionSearch, isPositionInMatch } from '../src/match-chord-progressions/index.js';
 import { SONGS } from './songs.js';
 
 const $ = (id) => document.getElementById(id);
@@ -139,7 +135,7 @@ const renderSearchProgression = () => {
   }
   display.className = SEARCH_FILLED_CLASS;
   display.innerHTML = chords
-    .map((chord) => `<span class="${SEARCH_CHIP_CLASS}">${escapeHtml(formatChordShorthand(chord))}</span>`)
+    .map((chord) => `<span class="${SEARCH_CHIP_CLASS}">${escapeHtml(formatChordName(chord))}</span>`)
     .join(SEARCH_ARROW);
 };
 

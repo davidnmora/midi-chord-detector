@@ -1,9 +1,13 @@
-import { parseProgressionString } from './parse.js';
+import { noteNameToPitchClass } from '../chord-classifier/notes.js';
 import { findSubProgressionMatches } from './match.js';
 
 const prepareSong = (song) => ({
   ...song,
-  parsedProgression: parseProgressionString(song.progression),
+  parsedProgression: song.progression.map(({ noteName, suffix }) => ({
+    rootPc: noteNameToPitchClass(noteName),
+    suffix,
+    display: `${noteName} ${suffix}`,
+  })),
 });
 
 const buildSongResult = (preparedSong, searchProgression) => {
@@ -40,7 +44,6 @@ export const createProgressionSearch = ({ songs }) => {
   };
 };
 
-export { parseChordShorthand, parseProgressionString, formatChordShorthand } from './parse.js';
 export {
   toAbstractProgression,
   findSubProgressionMatches,

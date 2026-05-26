@@ -81,7 +81,6 @@ src/
     notes.js                pitch-class arithmetic + note ↔ MIDI helpers
   match-chord-progressions/ key-agnostic chord-progression search
     index.js                createProgressionSearch
-    parse.js                chord shorthand ↔ { rootPc, suffix }
     match.js                abstract progression + sub-progression matching
 demo/
   index.html
@@ -144,19 +143,35 @@ formatChordName(null);                                   // → 'unknown'
 `match-chord-progressions` matches user-played chords against a song catalog **abstractly**: matching is on chord *types* and the *intervals between roots*, not absolute pitch. So a played `D → A → Bm` (in any key) matches a song's `C → G → Am` (I-V-vi anywhere), and a `ii-V-I` shape matches across all keys.
 
 ```js
-import { createProgressionSearch, parseChordShorthand } from './src/match-chord-progressions/index.js';
+import { createProgressionSearch } from './src/match-chord-progressions/index.js';
 
 const search = createProgressionSearch({
   songs: [
-    { title: "Hey, Soul Sister", artist: 'Train',  progression: 'C G Am F' },
-    { title: 'Sunday Morning',   artist: 'Maroon 5', progression: 'Dm7 G7 Cmaj7' },
+    {
+      title: 'Hey, Soul Sister',
+      artist: 'Train',
+      progression: [
+        { noteName: 'C', suffix: 'major' },
+        { noteName: 'G', suffix: 'major' },
+        { noteName: 'A', suffix: 'minor' },
+        { noteName: 'F', suffix: 'major' },
+      ],
+    },
+    {
+      title: 'Sunday Morning',
+      artist: 'Maroon 5',
+      progression: [
+        { noteName: 'D', suffix: 'minor7' },
+        { noteName: 'G', suffix: '7' },
+        { noteName: 'C', suffix: 'maj7' },
+      ],
+    },
   ],
 });
 
-const { rootPc, suffix } = parseChordShorthand('D');
-search.append({ rootPc, suffix });
-search.append(parseChordShorthand('A'));
-search.append(parseChordShorthand('Bm'));
+search.append({ rootPc: 2, suffix: 'major' });   // D major
+search.append({ rootPc: 9, suffix: 'major' });   // A major
+search.append({ rootPc: 11, suffix: 'minor' });  // B minor
 
 search.getResults();
 // → [{ song: { title: 'Hey, Soul Sister', ..., parsedProgression: [...] },

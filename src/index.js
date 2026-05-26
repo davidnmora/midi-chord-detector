@@ -16,9 +16,6 @@ export {
 } from './chord-classifier/notes.js';
 export {
   createProgressionSearch,
-  parseChordShorthand,
-  parseProgressionString,
-  formatChordShorthand,
   toAbstractProgression,
   findSubProgressionMatches,
   progressionContainsSubProgression,
