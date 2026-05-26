@@ -12,7 +12,26 @@ const setsEqual = (a, b) => {
 const intervalsFromRoot = (rootPc, pitchClasses) =>
   new Set([...pitchClasses].map((pc) => (pc - rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE));
 
-const hasDistinctBass = ({ rootPc, bassPc }) => bassPc !== undefined && bassPc !== rootPc;
+export const hasDistinctBass = ({ rootPc, bassPc }) =>
+  bassPc !== undefined && bassPc !== rootPc;
+
+export const bassIntervalFromRoot = (chord) =>
+  hasDistinctBass(chord)
+    ? (chord.bassPc - chord.rootPc + NOTES_PER_OCTAVE) % NOTES_PER_OCTAVE
+    : null;
+
+export const structuredChordFromClassification = (classification) => {
+  if (!classification) return null;
+  const { rootPc, suffix, bassPc } = classification;
+  return hasDistinctBass({ rootPc, bassPc })
+    ? { rootPc, suffix, bassPc }
+    : { rootPc, suffix };
+};
+
+export const chordsAreEqual = (a, b) =>
+  a.rootPc === b.rootPc &&
+  a.suffix === b.suffix &&
+  (hasDistinctBass(a) ? a.bassPc : a.rootPc) === (hasDistinctBass(b) ? b.bassPc : b.rootPc);
 
 export const formatChordName = (chord) => {
   if (!chord) return UNKNOWN_CHORD_NAME;

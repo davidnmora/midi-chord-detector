@@ -1,13 +1,19 @@
+import { formatChordName, hasDistinctBass } from '../chord-classifier/index.js';
 import { noteNameToPitchClass } from '../chord-classifier/notes.js';
 import { findSubProgressionMatches } from './match.js';
 
+const parseProgressionChord = ({ noteName, suffix, bassNoteName }) => {
+  const rootPc = noteNameToPitchClass(noteName);
+  const bassPc = bassNoteName ? noteNameToPitchClass(bassNoteName) : undefined;
+  const chord = hasDistinctBass({ rootPc, bassPc })
+    ? { rootPc, suffix, bassPc }
+    : { rootPc, suffix };
+  return { ...chord, display: formatChordName(chord) };
+};
+
 const prepareSong = (song) => ({
   ...song,
-  parsedProgression: song.progression.map(({ noteName, suffix }) => ({
-    rootPc: noteNameToPitchClass(noteName),
-    suffix,
-    display: `${noteName} ${suffix}`,
-  })),
+  parsedProgression: song.progression.map(parseProgressionChord),
 });
 
 const buildSongResult = (preparedSong, searchProgression) => {

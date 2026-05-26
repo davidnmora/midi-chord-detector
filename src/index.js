@@ -2,8 +2,12 @@ export { createChordDetector } from './chord-detector.js';
 export { createMidiInput } from './midi-input/index.js';
 export { createChordGater } from './chord-gater/index.js';
 export {
+  bassIntervalFromRoot,
+  chordsAreEqual,
   createChordClassifier,
   formatChordName,
+  hasDistinctBass,
+  structuredChordFromClassification,
   UNKNOWN_CHORD_NAME,
 } from './chord-classifier/index.js';
 export { CHORD_TEMPLATES } from './chord-classifier/templates.js';

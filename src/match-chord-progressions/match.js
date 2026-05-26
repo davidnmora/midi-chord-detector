@@ -1,3 +1,4 @@
+import { bassIntervalFromRoot } from '../chord-classifier/index.js';
 import { NOTES_PER_OCTAVE } from '../chord-classifier/notes.js';
 
 const intervalBetweenRoots = (fromPc, toPc) =>
@@ -8,13 +9,16 @@ export const toAbstractProgression = (chords) => ({
   deltas: chords.slice(1).map(({ rootPc }, i) =>
     intervalBetweenRoots(chords[i].rootPc, rootPc)
   ),
+  bassIntervals: chords.map(bassIntervalFromRoot),
 });
 
 const arraysEqual = (a, b) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
 
 const abstractProgressionsMatch = (a, b) =>
-  arraysEqual(a.suffixes, b.suffixes) && arraysEqual(a.deltas, b.deltas);
+  arraysEqual(a.suffixes, b.suffixes) &&
+  arraysEqual(a.deltas, b.deltas) &&
+  arraysEqual(a.bassIntervals, b.bassIntervals);
 
 const sliceCyclic = (array, start, length) =>
   Array.from({ length }, (_, i) => array[(start + i) % array.length]);

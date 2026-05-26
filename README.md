@@ -35,7 +35,7 @@ detector.disconnect();
     { noteName: 'C',  octave: 5 },
   ],
   chordName: 'C minor',   // e.g. 'C major', 'G sus4', 'C dim7 / Bb', 'unknown'
-  chord: { rootPc: 0, suffix: 'minor' }, // structured form, or null when unknown
+  chord: { rootPc: 0, suffix: 'minor' }, // structured form; bassPc when slash (e.g. C major / G), or null when unknown
 }
 ```
 
@@ -180,7 +180,7 @@ search.getResults();
 search.clear();
 ```
 
-A match is any contiguous window in the song's progression (with wrap-around for looped songs) whose chord suffixes and root-to-root semitone deltas match the search.
+A match is any contiguous window in the song's progression (with wrap-around for looped songs) whose chord suffixes, root-to-root semitone deltas, and bass-to-root intervals (for slash chords) match the search. Songs may specify an optional `bassNoteName` per chord (e.g. `{ noteName: 'C', suffix: 'major', bassNoteName: 'G' }`).
 
 ## Extending chord types
 

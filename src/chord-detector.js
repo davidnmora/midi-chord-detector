@@ -1,10 +1,11 @@
 import { createMidiInput } from './midi-input/index.js';
 import { createChordGater } from './chord-gater/index.js';
-import { createChordClassifier, formatChordName } from './chord-classifier/index.js';
+import {
+  createChordClassifier,
+  formatChordName,
+  structuredChordFromClassification,
+} from './chord-classifier/index.js';
 import { midiToNote } from './chord-classifier/notes.js';
-
-const toStructuredChord = (classification) =>
-  classification ? { rootPc: classification.rootPc, suffix: classification.suffix } : null;
 
 const buildChordEvent = (bassMidi, trebleMidis, classifier, bassAsRoot) => {
   const classification = classifier.classify({ bassMidi, trebleMidis, bassAsRoot });
@@ -12,7 +13,7 @@ const buildChordEvent = (bassMidi, trebleMidis, classifier, bassAsRoot) => {
     bassNote: midiToNote(bassMidi),
     trebleNotes: trebleMidis.map(midiToNote),
     chordName: formatChordName(classification),
-    chord: toStructuredChord(classification),
+    chord: structuredChordFromClassification(classification),
     _bassMidi: bassMidi,
     _trebleMidis: trebleMidis,
   };

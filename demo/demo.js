@@ -1,4 +1,4 @@
-import { createChordDetector, formatChordName } from '../src/index.js';
+import { chordsAreEqual, createChordDetector, formatChordName } from '../src/index.js';
 import { createProgressionSearch, isPositionInMatch } from '../src/match-chord-progressions/index.js';
 import { SONGS } from './songs.js';
 
@@ -178,9 +178,6 @@ const refreshSearch = () => {
   renderSearchProgression();
   renderSearchResults();
 };
-
-const chordsAreEqual = (a, b) =>
-  a.rootPc === b.rootPc && a.suffix === b.suffix;
 
 const appendChordIfNew = (chord) => {
   const progression = search.getSearchProgression();
