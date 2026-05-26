@@ -168,7 +168,7 @@ const renderSearchResults = () => {
   const hasSearch = search.getSearchProgression().length > 0;
   if (hasSearch && results.length === 0) {
     list.innerHTML =
-      '<div class="text-zinc-500 italic">No songs match this progression. Click Clear to start over.</div>';
+      '<div class="text-zinc-500 italic">No songs match this progression. Clear to start over.</div>';
     return;
   }
   list.innerHTML = results.map(renderSongResult).join('');
@@ -177,6 +177,13 @@ const renderSearchResults = () => {
 const refreshSearch = () => {
   renderSearchProgression();
   renderSearchResults();
+};
+
+const ESCAPE_KEY = 'Escape';
+
+const clearSearch = () => {
+  search.clear();
+  refreshSearch();
 };
 
 let detector = null;
@@ -288,9 +295,12 @@ $('clear-log').addEventListener('click', () => {
   $('event-log').innerHTML = '<span class="text-zinc-500 italic">Waiting for events…</span>';
 });
 
-$('clear-search').addEventListener('click', () => {
-  search.clear();
-  refreshSearch();
+$('clear-search').addEventListener('click', clearSearch);
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === ESCAPE_KEY) {
+    clearSearch();
+  }
 });
 
 refreshSearch();

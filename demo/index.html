@@ -35,50 +35,61 @@
         data-live-state="muted"
         class="space-y-6 transition-opacity duration-300 ease-out data-[live-state=muted]:opacity-40 data-[live-state=active]:opacity-100"
       >
-        <!-- Current Chord -->
-        <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
-          <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Current Chord</h2>
-          <div id="chord-display" class="text-4xl font-semibold text-zinc-600 tracking-tight">—</div>
-          <div class="flex gap-6 text-sm">
-            <div class="space-y-0.5">
-              <div class="text-xs text-zinc-500">Bass</div>
-              <div id="bass-display" class="text-zinc-400">—</div>
+        <div
+          id="chord-search-group"
+          class="rounded-xl border border-indigo-800/40 bg-indigo-950/10 p-4 space-y-4 ring-1 ring-inset ring-indigo-900/25"
+        >
+          <!-- Current Chord -->
+          <section class="bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-5 space-y-3">
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Current Chord</h2>
+            <div id="chord-display" class="text-4xl font-semibold text-zinc-600 tracking-tight">—</div>
+            <div class="flex gap-6 text-sm">
+              <div class="space-y-0.5">
+                <div class="text-xs text-zinc-500">Bass</div>
+                <div id="bass-display" class="text-zinc-400">—</div>
+              </div>
+              <div class="space-y-0.5">
+                <div class="text-xs text-zinc-500">Treble</div>
+                <div id="treble-display" class="text-zinc-400">—</div>
+              </div>
             </div>
-            <div class="space-y-0.5">
-              <div class="text-xs text-zinc-500">Treble</div>
-              <div id="treble-display" class="text-zinc-400">—</div>
-            </div>
-          </div>
-          <label class="flex items-center gap-2.5 cursor-pointer select-none w-fit">
-            <div class="relative">
-              <input id="bass-as-root" type="checkbox" class="sr-only peer" />
-              <div class="w-8 h-4 bg-zinc-700 rounded-full peer-checked:bg-indigo-600 transition-colors"></div>
-              <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-            </div>
-            <span class="text-xs text-zinc-400">Use bass note to determine chord</span>
-          </label>
-        </section>
+            <label class="flex items-center gap-2.5 cursor-pointer select-none w-fit">
+              <div class="relative">
+                <input id="bass-as-root" type="checkbox" class="sr-only peer" />
+                <div class="w-8 h-4 bg-zinc-700 rounded-full peer-checked:bg-indigo-600 transition-colors"></div>
+                <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
+              <span class="text-xs text-zinc-400">Use bass note to determine chord</span>
+            </label>
+          </section>
 
-        <!-- Search Songs by Chord -->
-        <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Search Songs by Chord</h2>
-            <button id="clear-search" class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">Clear</button>
-          </div>
-          <p class="text-xs text-zinc-500 leading-relaxed">
-            Play chords in any key — matches by chord type and intervals between roots, not absolute pitch.
-          </p>
-          <div
-            id="search-progression"
-            class="text-sm text-zinc-500 italic min-h-[1.5rem]"
-          >
-            Play a chord to start searching…
-          </div>
-          <div
-            id="search-results"
-            class="space-y-1.5 text-xs max-h-72 overflow-y-auto"
-          ></div>
-        </section>
+          <!-- Search Songs by Chord -->
+          <section class="bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-5 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-400">Search Songs by Chord</h2>
+              <button
+                id="clear-search"
+                type="button"
+                class="shrink-0 bg-zinc-800 hover:bg-red-950/80 border border-red-900/60 hover:border-red-600 text-red-300 hover:text-red-200 text-xs font-medium px-3 py-1.5 rounded transition-colors"
+              >
+                Clear search (or hit escape)
+              </button>
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Play chords in any key — matches by chord type and intervals between roots, not absolute pitch.
+            </p>
+            <div
+              id="search-progression"
+              class="text-sm text-zinc-500 italic min-h-[1.5rem]"
+            >
+              Play a chord to start searching…
+            </div>
+            <div
+              id="search-results"
+              class="space-y-1.5 text-xs max-h-72 overflow-y-auto"
+            ></div>
+          </section>
+        </div>
 
         <!-- Event log -->
         <section class="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
