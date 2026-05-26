@@ -2,6 +2,17 @@
 
 Vanilla ESM JS module that connects to a USB MIDI keyboard via the **Web MIDI API**, buffers held notes, and emits `onChordStart` / `onChordEnd` callbacks with structured chord info.
 
+### Demo
+
+The Web MIDI API requires a **secure context** — `file://` URLs and remote `http://` origins won't work. Serve the project locally and open it via `localhost`:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open **http://localhost:8000/demo/index.html** in Chrome or Edge and click **Connect MIDI** (if it doesn't connect automatically, which it should).
+
+
 ## Usage
 
 ```js
@@ -56,16 +67,6 @@ The classifier finds every valid chord interpretation of the treble notes alone,
 The bass pitch class is added to the treble set and the whole group is matched against templates with the bass as root. `bass=C, treble=E G B` → pitch classes `{C E G B}` → intervals from C `{0 4 7 11}` → **C maj7**. Falls back to the default disambiguation path if no template matches the combined set.
 
 `getBassAsRoot` is called lazily on every chord event, so a live UI toggle takes effect immediately without reconnecting. Call `detector.reclassify()` to re-evaluate the current held chord after the getter's value changes.
-
-### Demo
-
-The Web MIDI API requires a **secure context** — `file://` URLs and remote `http://` origins won't work. Serve the project locally and open it via `localhost`:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then open **http://localhost:8000/demo/index.html** in Chrome or Edge and click **Connect MIDI**.
 
 ## Module layout
 
