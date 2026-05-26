@@ -10,6 +10,7 @@ import { createChordDetector } from './src/index.js';
 const detector = createChordDetector({
   splitBassAndTrebleOn: 'C4', // or { noteName: 'C', octave: 4 }, or MIDI number 60
   settleMs: 60,               // ms of silence before a chord is stamped
+  getBassAsRoot: () => false, // optional live getter — see "Bass as root" below
   onChordStart: (chord) => console.log('start', chord),
   onChordEnd:   (chord) => console.log('end',   chord),
 });
@@ -19,6 +20,7 @@ await detector.connect({ inputName: 'Arturia KeyStep' }); // or target by name
 
 detector.listInputs();          // → array of device info objects
 detector.getActiveInput();      // → active device info or null
+detector.reclassify();          // re-runs classify on the current held chord (e.g. after toggling getBassAsRoot)
 detector.disconnect();
 ```
 
@@ -38,9 +40,19 @@ detector.disconnect();
 
 A chord is valid when exactly **1 bass note** (≤ split) and **3 treble notes** (> split) are held simultaneously.
 
-### Bass as a root hint
+### Bass as root
 
-Some treble shapes are ambiguous — `C, D, G` is both `C sus2` and `G sus4`, and a fully-diminished 7th has four equally valid roots. The classifier collects every valid interpretation of the treble notes and uses the **bass pitch class** to pick the root: if the bass matches one of the candidate roots, that interpretation wins; otherwise the first match is used and the bass is shown as a slash (e.g. `C sus2 / D`). Unambiguous chords (major/minor/etc.) behave exactly as before.
+The bass note participates in chord identification in two modes, controlled by the `getBassAsRoot` getter you pass to `createChordDetector` (or the `bassAsRoot` boolean passed directly to `classify`):
+
+**Default (bassAsRoot = false) — disambiguation only**
+
+The classifier finds every valid chord interpretation of the treble notes alone, then uses the bass pitch class to pick between them. If the bass matches one of the candidate roots it wins; otherwise the highest-priority match is used and the bass appears as a slash note (e.g. `Em / C`). Unambiguous treble shapes are unaffected.
+
+**bassAsRoot = true — bass as a chord tone**
+
+The bass pitch class is added to the treble set and the whole group is matched against templates with the bass as root. `bass=C, treble=E G B` → pitch classes `{C E G B}` → intervals from C `{0 4 7 11}` → **C maj7**. Falls back to the default disambiguation path if no template matches the combined set.
+
+`getBassAsRoot` is called lazily on every chord event, so a live UI toggle takes effect immediately without reconnecting. Call `detector.reclassify()` to re-evaluate the current held chord after the getter's value changes.
 
 ### Demo
 
@@ -106,6 +118,13 @@ classifier.classify({
   trebleMidis: [63, 67, 72], // D#4, G4, C5
 });
 // → 'C minor'
+
+classifier.classify({
+  bassMidi: 48,              // C3
+  trebleMidis: [64, 67, 71], // E4, G4, B4
+  bassAsRoot: true,
+});
+// → 'C maj7'  (bass included as a chord tone, rooted on C)
 ```
 
 ## Extending chord types
