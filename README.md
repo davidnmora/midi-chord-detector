@@ -186,7 +186,9 @@ A match is any contiguous window in the song's progression (with wrap-around for
 
 ## Extending chord types
 
-Add entries to `src/chord-classifier/templates.js`:
+Add entries to `src/chord-classifier/templates.js`. Each template is a **pitch-class set** relative to a candidate root, not a voicing or note order.
+
+### Example templates
 
 ```js
 export const CHORD_TEMPLATES = [
@@ -198,8 +200,9 @@ export const CHORD_TEMPLATES = [
   { suffix: 'sus4',       intervals: [0, 5, 7] },
   { suffix: 'maj7',       intervals: [0, 4, 7, 11] },
   { suffix: '7',          intervals: [0, 4, 7, 10] },
-  { suffix: 'm7b5',       intervals: [0, 3, 6, 10] },  // half-diminished 7
-  { suffix: 'dim7',       intervals: [0, 3, 6, 9]  },  // fully-diminished 7
+  { suffix: 'm7b5',       intervals: [0, 3, 6, 10] },
+  { suffix: 'dim7',       intervals: [0, 3, 6, 9] },
+  // ... etc
 ];
 ```
 
@@ -210,3 +213,26 @@ createChordDetector({
   chordClassifierOptions: { templates: myTemplates },
 });
 ```
+
+
+### What `intervals` means
+
+Each value is a **semitone distance from the root within one octave** (0–11). The root is always `0`. For example, a major triad is `[0, 4, 7]`: root, major third (+4 semitones), perfect fifth (+7). A dominant 7th adds the flat seventh at +10: `[0, 4, 7, 10]`.
+
+The array length is how many **distinct pitch classes** must be held at once (after collapsing duplicate keys and ignoring octave). A three-note template only matches when exactly three different pitch classes are sounding in the treble; a fifth does not match a triad, and holding an extra tone (e.g. adding the 9 on a triad) prevents a match until you add a template that includes that interval.
+
+### How matching works (order-independent)
+
+Classification in `src/chord-classifier/index.js` does not care about the order notes were played or which octave they sit in:
+
+1. Incoming MIDI is reduced to **pitch classes** (0 = C, 1 = C#, …, 11 = B).
+2. Duplicate pitch classes are dropped (one `Set` of held classes).
+3. For **each** held pitch class as a trial root, the classifier builds the set of intervals from that root to every held class: `(note - root + 12) % 12`.
+4. That set is compared to the template’s `intervals` (also stored as a set). They must be **exactly equal**—same size, same members.
+
+So voicing order does not matter. `E`–`G`–`C` and `C`–`E`–`G` in any octave are the same pitch classes `{0, 4, 7}`; with trial root `C` (0), intervals are `{0, 4, 7}`, which matches `major`.
+
+Order in the `intervals` array also does not matter; `[7, 0, 4]` is equivalent to `[0, 4, 7]`. Convention is to list `0` first and ascending intervals for readability.
+
+**Root ambiguity:** If multiple trial roots yield the same interval set against different templates, the **bass note** (lowest MIDI in the split) breaks ties when it equals one of those roots; otherwise the template with the highest optional `priority` wins (see `minor7` vs `6` in `templates.js`).
+
